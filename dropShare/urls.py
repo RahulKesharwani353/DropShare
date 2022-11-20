@@ -14,7 +14,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path,include
 
 #static file setup
 from django.conf.urls.static import static
@@ -26,6 +26,7 @@ urlpatterns = [
     path('handel/', HandleFileUpload.as_view()),
     path('handel/<str:pk>/', HandleFileUpload.as_view()),
     path('admin/', admin.site.urls),
+    path('auth/', include('authenticate.urls')),
 ]
 
 

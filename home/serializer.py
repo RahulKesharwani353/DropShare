@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import *
 import shutil
 from dropShare.settings import MEDIA_ROOT, STATICFILES_DIR
+from rest_framework.fields import CurrentUserDefault
 
 class FileListSerializer(serializers.Serializer):
     file = serializers.ListField(
@@ -13,7 +14,14 @@ class FileListSerializer(serializers.Serializer):
         shutil.make_archive(f'public/static/zip/{folder}' , 'zip' ,f'public/static/{folder}' )
 
     def create(self, validated_data):
-        folder_s = Folders.objects.create()
+        user = None
+        request = self.context.get("request")
+        #print(self.context)
+        if request and hasattr(request, "user"):
+            user = request.user
+        access_by = validated_data.get('access_by')
+
+        folder_s = Folders.objects.create(user = user, access_by = access_by)
         files = validated_data.pop('file')
         file_list = []
         for item in files:
@@ -29,5 +37,5 @@ class GetFileListSerializer(serializers.ModelSerializer):
         model=Files
         fields='__all__'
 
-    def create(self, validated_data):
-        return super().create(validated_data)
+    # def create(self, validated_data):
+    #     return super().create(validated_data)

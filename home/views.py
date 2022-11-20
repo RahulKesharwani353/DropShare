@@ -4,6 +4,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from .serializer import *
+from rest_framework import status
 # Create your views here.
 
 
@@ -11,27 +12,33 @@ from .serializer import *
 class HandleFileUpload(APIView):
     def post(self , request):
             data = request.data
+            current_user = request.user
 
-            serializer = FileListSerializer(data = data)
+            if current_user.is_authenticated:
+                serializer = FileListSerializer(data = data, context= {
+                    'request': request
+                })
         
-            if serializer.is_valid():
-                serializer.save()
+                if serializer.is_valid():
+                    serializer.save()
 
-                return Response({
+                    return Response({
                     'status' : 200,
                     'message' : 'files uploaded successfully',
                     'data' : serializer.data
-                })
-                
-            
-            return Response({
+                    })
+                return Response({
                 'status' : 400,
                 'message' : 'somethign went wrong',
                 'data'  : serializer.errors
-            })
+                })
+            else:
+                return Response({
+                'message' : 'somethign went wrong',
+                }, status= status.HTTP_401_UNAUTHORIZED)
     
-    def get(self, request, pk):
-        id = pk
+    def get(self, request):
+        id = request.query_params['id']
         # files = Files.objects.get(id = id)
         # serializers = GetFileListSerializer(data =files)
         # if serializers.is_valid():
@@ -60,17 +67,22 @@ class HandleFileUpload(APIView):
         #      }, status= 400)
 
     #---------------------------------------------3--------------------------------
-     
-        try:
-            files = Files.objects.filter(folders = id)
-            serializers = GetFileListSerializer(files, many= True)
-            return Response({
+        if request.user.is_authenticated:
+            try:
+                files = Files.objects.filter(folders = id)
+                serializers = GetFileListSerializer(files, many= True)
+                return Response({
                 'status': 200,
                 'data': serializers.data
-            })
-        except Exception as e:
-            return Response({
+                })
+            except Exception as e:
+                return Response({
                 'status' : 400,
                 'message' : 'No Data Found',
-            }, status= 400)
+                }, status= 400)
+        else:
+            return Response({
+                'status' : 400,
+                'message' : 'User not login',
+                }, status= 400)
 
