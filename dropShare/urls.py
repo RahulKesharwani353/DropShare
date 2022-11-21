@@ -23,8 +23,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from home.views import *
 
 urlpatterns = [
-    path('handel/', HandleFileUpload.as_view()),
-    path('handel/<str:pk>/', HandleFileUpload.as_view()),
+    path('handel/', include('home.urls')),
     path('admin/', admin.site.urls),
     path('auth/', include('authenticate.urls')),
 ]

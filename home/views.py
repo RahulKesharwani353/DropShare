@@ -38,7 +38,26 @@ class HandleFileUpload(APIView):
                 }, status= status.HTTP_401_UNAUTHORIZED)
     
     def get(self, request):
+        User = request.user
+
+        if User.is_authenticated:
+            try:
+                folders = Folders.objects.filter(user = User)
+                serializers = GetFolderListSerializers(folders, many = True)
+                return Response(data= serializers.data, status=status.HTTP_200_OK)
+            except Exception as e:
+                return Response({
+                    'message': str(e)
+                }, status= status.HTTP_400_BAD_REQUEST)
+        else:
+                return Response({
+                'message' : 'UNAUTHORIZED',
+                },status= status.HTTP_401_UNAUTHORIZED)
+
+class HandelShare(APIView):
+    def get(self, request):
         id = request.query_params['id']
+        User = request.user
         # files = Files.objects.get(id = id)
         # serializers = GetFileListSerializer(data =files)
         # if serializers.is_valid():
@@ -69,12 +88,19 @@ class HandleFileUpload(APIView):
     #---------------------------------------------3--------------------------------
         if request.user.is_authenticated:
             try:
-                files = Files.objects.filter(folders = id)
-                serializers = GetFileListSerializer(files, many= True)
-                return Response({
-                'status': 200,
-                'data': serializers.data
-                })
+                folder = Folders.objects.get(uid= id)
+                
+                print(folder.access_by )
+                if folder.access_by in User.email:
+                    files = Files.objects.filter(folders = id)
+                    serializers = GetFileListSerializer(files, many= True)
+                    return Response({
+                    'data': serializers.data
+                    })
+                else :
+                    return Response({
+                    'message' : 'Access Denied',
+                 }, status= status.HTTP_401_UNAUTHORIZED)
             except Exception as e:
                 return Response({
                 'status' : 400,
@@ -84,5 +110,4 @@ class HandleFileUpload(APIView):
             return Response({
                 'status' : 400,
                 'message' : 'User not login',
-                }, status= 400)
-
+                }, status= status.HTTP_401_UNAUTHORIZED)

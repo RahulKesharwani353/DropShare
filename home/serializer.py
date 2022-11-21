@@ -3,8 +3,9 @@ from .models import *
 import shutil
 from dropShare.settings import MEDIA_ROOT, STATICFILES_DIR
 from rest_framework.fields import CurrentUserDefault
-
+ 
 class FileListSerializer(serializers.Serializer):
+ 
     file = serializers.ListField(
         child = serializers.FileField(max_length = 1000000, allow_empty_file = False, use_url = False)
     )
@@ -39,3 +40,9 @@ class GetFileListSerializer(serializers.ModelSerializer):
 
     # def create(self, validated_data):
     #     return super().create(validated_data)
+
+class GetFolderListSerializers(serializers.ModelSerializer):
+    files = GetFileListSerializer(many = True)
+    class Meta:
+        model=Folders
+        fields='__all__'
