@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from rest_framework.generics import GenericAPIView
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -111,3 +111,20 @@ class HandelShare(APIView):
                 'status' : 400,
                 'message' : 'User not login',
                 }, status= status.HTTP_401_UNAUTHORIZED)
+    
+
+class DownloadZip(APIView):
+
+    def zip_files(self,folder):
+        shutil.make_archive(f'public/static/zip/{folder}' , 'zip' ,f'public/static/{folder}' )
+        
+
+    def get(self, request):
+        id = request.query_params['id']
+        User = request.user
+        
+        if User.is_authenticated:
+            folder = Folders.objects.get(uid= id)
+            self.zip_files(folder.uid)
+            print(request)
+            return HttpResponseRedirect(redirect_to="https://www.youtube.com/")

@@ -9,5 +9,6 @@ from rest_framework_simplejwt.views import (
 urlpatterns = [
     path('', HandleFileUpload.as_view()),
     path('share/', HandelShare.as_view()),
+    path('download/', DownloadZip.as_view()),
     path('my-uploads/', HandleFileUpload.as_view()),
 ]
